@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Churn Prediction Analysis Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>📊 Churn Prediction Analysis</h1>
+                <p>Machine Learning-based Customer Churn Prediction System</p>
+            </div>
+            <div class="status-indicator">
+                <span id="model-status" class="status-dot loading"></span>
+                <span id="status-text">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="nav-btn" data-tab="predict">Single Prediction</button>
+            <button class="nav-btn" data-tab="analytics">Analytics</button>
+            <button class="nav-btn" data-tab="samples">Sample Data</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <section id="dashboard" class="tab-content active">
+                <div class="section-title">📈 Overview Dashboard</div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Customers</div>
+                        <div class="stat-value" id="stat-total">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Churn Risk Customers</div>
+                        <div class="stat-value" id="stat-churn">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Churn Rate</div>
+                        <div class="stat-value" id="stat-rate">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Model Accuracy</div>
+                        <div class="stat-value" id="stat-accuracy">-</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Churn Distribution</h3>
+                        <div id="churn-pie"></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Model Performance Metrics</h3>
+                        <div id="metrics-bar"></div>
+                    </div>
+                </div>
+
+                <div class="chart-container full-width">
+                    <h3>Top 10 Feature Importance</h3>
+                    <div id="feature-importance"></div>
+                </div>
+            </section>
+
+            <!-- Single Prediction Tab -->
+            <section id="predict" class="tab-content">
+                <div class="section-title">🎯 Single Customer Prediction</div>
+                
+                <div class="prediction-form">
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="form-input">
+                                <label>Age</label>
+                                <input type="number" id="input-age" min="18" max="80" value="45">
+                            </div>
+                            <div class="form-input">
+                                <label>Tenure (months)</label>
+                                <input type="number" id="input-tenure" min="0" max="72" value="24">
+                            </div>
+                            <div class="form-input">
+                                <label>Monthly Charges ($)</label>
+                                <input type="number" id="input-monthly-charges" min="20" max="150" step="0.01" value="65.50">
+                            </div>
+                            <div class="form-input">
+                                <label>Total Charges ($)</label>
+                                <input type="number" id="input-total-charges" min="0" max="10000" step="0.01" value="1570">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-input">
+                                <label>Monthly Usage Hours</label>
+                                <input type="number" id="input-usage-hours" min="0" max="720" value="300">
+                            </div>
+                            <div class="form-input">
+                                <label>Support Contacts</label>
+                                <input type="number" id="input-support-contacts" min="0" max="10" value="2">
+                            </div>
+                            <div class="form-input">
+                                <label>Contract Type</label>
+                                <select id="input-contract">
+                                    <option>Month-to-month</option>
+                                    <option>One year</option>
+                                    <option>Two year</option>
+                                </select>
+                            </div>
+                            <div class="form-input">
+                                <label>Internet Service</label>
+                                <select id="input-internet">
+                                    <option>Fiber optic</option>
+                                    <option>DSL</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-input">
+                                <label>Payment Method</label>
+                                <select id="input-payment">
+                                    <option>Electronic check</option>
+                                    <option>Mailed check</option>
+                                    <option>Bank transfer</option>
+                                    <option>Credit card</option>
+                                </select>
+                            </div>
+                            <div class="form-input">
+                                <label>Tech Support</label>
+                                <select id="input-tech-support">
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+                            <div class="form-input">
+                                <label>Online Backup</label>
+                                <select id="input-online-backup">
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-predict" onclick="predictSingleCustomer()">🔮 Predict Churn Risk</button>
+                </div>
+
+                <div id="prediction-result" class="prediction-result hidden">
+                    <div class="result-card">
+                        <div class="result-risk-label">Churn Risk Assessment:</div>
+                        <div class="result-risk-value" id="result-risk-value">-</div>
+                        <div class="result-probability">
+                            <canvas id="probability-gauge"></canvas>
+                        </div>
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <span>Churn Probability:</span>
+                                <span id="result-churn-prob">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span>No-Churn Probability:</span>
+                                <span id="result-no-churn-prob">-</span>
+                            </div>
+                        </div>
+                        <div class="result-recommendation" id="result-recommendation"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Tab -->
+            <section id="analytics" class="tab-content">
+                <div class="section-title">📊 Analytics & Insights</div>
+                
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Age Distribution by Churn</h3>
+                        <div id="age-distribution"></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Tenure Distribution by Churn</h3>
+                        <div id="tenure-distribution"></div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Monthly Charges by Churn</h3>
+                        <div id="charges-distribution"></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Contract Type Impact</h3>
+                        <div id="contract-impact"></div>
+                    </div>
+                </div>
+
+                <div class="insight-cards">
+                    <div class="insight-card">
+                        <h4>🔍 Key Insights</h4>
+                        <ul id="insights-list">
+                            <li>Loading insights...</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sample Data Tab -->
+            <section id="samples" class="tab-content">
+                <div class="section-title">📋 Sample Customer Data</div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr id="table-header"></tr>
+                        </thead>
+                        <tbody id="table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Churn Prediction Analysis © 2024 | Machine Learning Dashboard</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
